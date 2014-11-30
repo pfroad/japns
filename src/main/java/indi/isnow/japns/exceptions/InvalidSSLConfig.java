@@ -29,17 +29,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package indi.isnow.japns.japns.excepiton;
+package indi.isnow.japns.exceptions;
+
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 
 /**
- * Base class for all the exceptions thrown in Apns Library
+ * Signals that the the provided SSL context settings (e.g.
+ * keystore path, password, encryption type, etc) are invalid
+ *
+ * This Exception can be caused by any of the following:
+ *
+ * <ol>
+ * <li>{@link KeyStoreException}</li>
+ * <li>{@link NoSuchAlgorithmException}</li>
+ * <li>{@link CertificateException}</li>
+ * <li>{@link IOException}</li>
+ * <li>{@link UnrecoverableKeyException}</li>
+ * <li>{@link KeyManagementException}</li>
+ * </ol>
+ *
  */
-public class ApnsException extends RuntimeException {
-    private static final long serialVersionUID = -4756693306121825229L;
+public class InvalidSSLConfig extends ApnsException {
+    private static final long serialVersionUID = -7283168775864517167L;
 
-    public ApnsException()                      { super(); }
-    public ApnsException(String message)        { super(message); }
-    public ApnsException(Throwable cause)       { super(cause); }
-    public ApnsException(String m, Throwable c) { super(m, c); }
+    public InvalidSSLConfig()                      { super(); }
+    public InvalidSSLConfig(String message)        { super(message); }
+    public InvalidSSLConfig(Throwable cause)       { super(cause); }
+    public InvalidSSLConfig(String m, Throwable c) { super(m, c); }
 
 }

@@ -28,9 +28,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package indi.isnow.japns.japns.util;
+package indi.isnow.japns.util;
 
-import indi.isnow.japns.japns.excepiton.ApnsException;
+import indi.isnow.japns.exceptions.InvalidSSLConfig;
+import indi.isnow.japns.exceptions.NetworkIOException;
+import indi.isnow.japns.notification.ApnsNotification;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -45,6 +47,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -76,24 +79,24 @@ public final class Utilities {
     private Utilities() { throw new AssertionError("Uninstantiable class"); }
 
     public static SSLSocketFactory newSSLSocketFactory(final InputStream cert, final String password,
-         final String ksType, final String ksAlgorithm) throws ApnsException {
+         final String ksType, final String ksAlgorithm) throws InvalidSSLConfig {
         final SSLContext context = newSSLContext(cert, password, ksType, ksAlgorithm);
         return context.getSocketFactory();
     }
 
     public static SSLContext newSSLContext(final InputStream cert, final String password,
-            final String ksType, final String ksAlgorithm) throws ApnsException {
+            final String ksType, final String ksAlgorithm) throws InvalidSSLConfig {
            try {
                final KeyStore ks = KeyStore.getInstance(ksType);
                ks.load(cert, password.toCharArray());
                return newSSLContext(ks, password, ksAlgorithm);
            } catch (final Exception e) {
-               throw new ApnsException(e);
+               throw new InvalidSSLConfig(e);
            }
        }
     
     public static SSLContext newSSLContext(final KeyStore ks, final String password,
-            final String ksAlgorithm) throws ApnsException {
+            final String ksAlgorithm) throws InvalidSSLConfig {
            try {
                // Get a KeyManager and initialize it
                final KeyManagerFactory kmf = KeyManagerFactory.getInstance(ksAlgorithm);
@@ -109,7 +112,7 @@ public final class Utilities {
                sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
                return sslContext;
            } catch (final GeneralSecurityException e) {
-               throw new ApnsException(e);
+               throw new InvalidSSLConfig(e);
            }
        }
 
@@ -193,6 +196,49 @@ public final class Utilities {
         }
     }
 
+    public static byte[] marshallItem(final byte itemId, final byte[] itemData) {
+    	final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	final DataOutputStream dos = new DataOutputStream(baos);
+    	
+    	try {
+			dos.write(itemId);
+			dos.writeShort(itemData.length);
+			dos.write(itemData);
+			return baos.toByteArray();
+		} catch (final IOException e) {
+			throw new AssertionError(e);
+		}
+	}
+    
+    /**
+     * ms size is less than 256
+     * @param command
+     * @param ms
+     * @return
+     */
+    public static byte[] marshallFrame(final byte command, final List<ApnsNotification> ms) {
+    	final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	final DataOutputStream dos = new DataOutputStream(baos);
+    	
+    	try {
+    		dos.write(command);
+    		byte[][] bytes = new byte[ms.size()][];
+    		int size = 0;
+    		for (int i = 0; i < ms.size(); i++) {
+    			byte[] m = ms.get(i).marshall();
+    			bytes[i] = m;
+    			size += m.length;
+    		}
+			dos.writeInt(size);
+    		for (int i = 0; i < bytes.length; i++) {
+    			dos.write(marshallItem((byte) i, bytes[i]));
+    		}
+    		return baos.toByteArray();
+		} catch (final IOException e) {
+			throw new AssertionError(e);
+		}
+	}
+    
     public static Map<byte[], Integer> parseFeedbackStreamRaw(final InputStream in) {
         final Map<byte[], Integer> result = new HashMap<byte[], Integer>();
 
@@ -281,11 +327,11 @@ public final class Utilities {
         return copy;
     }
 
-    public static void wrapAndThrowAsRuntimeException(final Exception e) throws ApnsException {
+    public static void wrapAndThrowAsRuntimeException(final Exception e) throws NetworkIOException {
         if (e instanceof IOException) {
-            throw new ApnsException((IOException)e);
-        } else if (e instanceof ApnsException) {
-            throw (ApnsException)e;
+            throw new NetworkIOException((IOException)e);
+        } else if (e instanceof NetworkIOException) {
+            throw (NetworkIOException)e;
         } else if (e instanceof RuntimeException) {
             throw (RuntimeException)e;
         } else {

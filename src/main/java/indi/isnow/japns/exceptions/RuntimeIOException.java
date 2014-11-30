@@ -28,46 +28,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package indi.isnow.japns.japns.entity;
+
+package indi.isnow.japns.exceptions;
+
+import java.io.IOException;
 
 /**
- * Represents an APNS notification to be sent to Apple service.
+ * Signals that an I/O exception of some sort has occurred. This
+ * class is the general class of exceptions produced by failed or
+ * interrupted I/O operations.
+ *
+ * This is a RuntimeException, unlike the java.io.IOException
  */
-public interface ApnsNotification {
+public class RuntimeIOException extends ApnsException {
+    private static final long serialVersionUID = 8665285084049041306L;
 
-    /**
-     * Returns the binary representation of the device token.
-     */
-    public byte[] getDeviceToken();
+    public RuntimeIOException()                      { super(); }
+    public RuntimeIOException(String message)        { super(message); }
+    public RuntimeIOException(IOException cause)       { super(cause); }
+    public RuntimeIOException(String m, IOException c) { super(m, c); }
 
-    /**
-     * Returns the binary representation of the payload.
-     *
-     */
-    public byte[] getPayload();
-
-    /**
-     * Returns the identifier of the current message.  The
-     * identifier is an application generated identifier.
-     *
-     * @return the notification identifier
-     */
-    public int getIdentifier();
-
-    /**
-     * Returns the expiry date of the notification, a fixed UNIX
-     * epoch date expressed in seconds
-     *
-     * @return the expiry date of the notification
-     */
-    public int getExpiry();
-
-    /**
-     * Returns the binary representation of the message as expected by the
-     * APNS server.
-     *
-     * The returned array can be used to sent directly to the APNS server
-     * (on the wire/socket) without any modification.
-     */
-    public byte[] marshall();
 }

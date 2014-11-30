@@ -1,4 +1,6 @@
-package indi.isnow.japns.japns;
+package indi.isnow.japns;
+
+import indi.isnow.japns.exceptions.InvalidSSLConfig;
 
 import java.io.IOException;
 import java.io.InputStream;

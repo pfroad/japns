@@ -28,9 +28,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package indi.isnow.japns.japns.entity;
+package indi.isnow.japns.notification;
 
-import indi.isnow.japns.japns.util.Utilities;
+import indi.isnow.japns.util.Utilities;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
