@@ -30,7 +30,6 @@
  */
 package indi.isnow.japns.service;
 
-import indi.isnow.japns.exceptions.ApnsDeliveryErrorException;
 import indi.isnow.japns.exceptions.DeliveryError;
 import indi.isnow.japns.exceptions.NetworkIOException;
 import indi.isnow.japns.notification.ApnsNotification;
@@ -315,7 +314,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 socket.getOutputStream().flush();
                 cacheNotification(m);
 
-                //logger.debug("Message \"{}\" sent", m);
+                logger.debug("Message \"{}\" sent", m);
                 attempts = 0;
                 break;
             } catch (IOException e) {
@@ -349,15 +348,16 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 Socket socket = getOrCreateSocket();
                 socket.getOutputStream().write(frame.marshall());
                 socket.getOutputStream().flush();
-                cacheNotification(ms);
+                if (attempts == 0)
+                	cacheNotification(ms);
 
-                //logger.debug("Message \"{}\" sent", m);
+                logger.debug("Messages \"{}\" sent", ms);
                 attempts = 0;
                 break;
             } catch (IOException e) {
                 Utilities.close(socket);
                 if (attempts >= RETRIES) {
-                    logger.error("Couldn't send message after " + RETRIES + " retries." + m, e);
+                    logger.error("Couldn't send message after " + RETRIES + " retries." + ms, e);
                     Utilities.wrapAndThrowAsRuntimeException(e);
                 }
                 // The first failure might be due to closed connection (which in turn might be caused by
@@ -367,7 +367,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
                 // which uses the delay.
 
                 if (attempts != 1) {
-                    logger.info("Failed to send message " + m + "... trying again after delay", e);
+                    logger.info("Failed to send message " + ms + "... trying again after delay", e);
                     Utilities.sleep(DELAY_IN_MS);
                 }
             }
@@ -393,8 +393,7 @@ public class ApnsConnectionImpl implements ApnsConnection {
     private void cacheNotification(List<ApnsNotification> notifications) {
         cachedNotifications.addAll(notifications);
         while (cachedNotifications.size() > cacheLength) {
-            cachedNotifications.poll();
-            logger.debug("Removing notification from cache " + notification);
+            logger.debug("Removing notification from cache " + cachedNotifications.poll());
         }
     }
 

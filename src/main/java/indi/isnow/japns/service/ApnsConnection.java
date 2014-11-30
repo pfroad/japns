@@ -38,7 +38,7 @@ import java.io.Closeable;
 public interface ApnsConnection extends Closeable {
 
     //Default number of notifications to keep for error purposes
-    public static final int DEFAULT_CACHE_LENGTH = 100;
+    public static final int DEFAULT_CACHE_LENGTH = 256;
 
     void sendMessage(ApnsNotification m) throws NetworkIOException;
 
